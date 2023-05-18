@@ -1,0 +1,72 @@
+<div class="dark:text-white dark:bg-slate-800 shadow p-2 rounded-sm h-full">
+    <h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+        Resolution and Origin
+    </h5>
+    <div class="m-2">
+        <label for="object_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Resolution</label>
+        <input type="text" id="object_name"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            placeholder="Base" [(ngModel)]="stateControl.resolution" required>
+        <label for="object_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Origin X</label>
+        <input type="text" id="object_name"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            placeholder="Base" [(ngModel)]="stateControl.origin.x" required>
+        <label for="object_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Origin Y</label>
+        <input type="text" id="object_name"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            placeholder="Base" [(ngModel)]="stateControl.origin.y" required>
+
+    </div>
+    <h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+        Add or Remove items
+    </h5>
+    <div class="flex flex-row flex-wrap gap-1 m-2">
+        <app-sidebar-button [selected]="stateControl.toolSelected == tool.PAN" (click)="panClicked()">
+            PAN
+        </app-sidebar-button>
+        <app-sidebar-button [selected]="stateControl.toolSelected == tool.ADD" (click)="addClicked()">
+            ADD
+        </app-sidebar-button>
+        <app-sidebar-button [selected]="stateControl.toolSelected == tool.SELECT" (click)="selectClicked()">
+            SELECT
+        </app-sidebar-button>
+        <app-sidebar-button [selected]="stateControl.toolSelected == tool.CONNECTION" (click)="connectClicked()">
+            CONNECT
+        </app-sidebar-button>
+        <app-sidebar-button [selected]="stateControl.toolSelected == tool.REMOVE" (click)="removeClicked()">
+            REMOVE
+        </app-sidebar-button>
+    </div>
+    <div class="m-2">
+        <div *ngIf="stateControl.toolSelected == tool.ADD || stateControl.toolSelected == tool.SELECT">
+            <div>
+                <app-sidebar-card>
+                    <div *ngIf="objectType == editType.WAYPOINT && waypoint">
+                        <label for="object_name"
+                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Waypoint name</label>
+                        <input type="text" id="object_name"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            placeholder="Base" [(ngModel)]="waypoint.name" required>
+                    </div>
+                    <div *ngIf="objectType == editType.FEATURE && feature">
+                        <label for="object_name"
+                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Feature name</label>
+                        <input type="text" id="object_name"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            placeholder="Base" [(ngModel)]="feature.name" required>
+                        <label for="description"
+                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Feature
+                            Description</label>
+                        <input type="text" id="description"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            placeholder="Base" [(ngModel)]="feature.description" required>
+                    </div>
+                </app-sidebar-card>
+            </div>
+        </div>
+        <div *ngIf="stateControl.toolSelected == tool.REMOVE">
+            <app-sidebar-card>REMOVE</app-sidebar-card>
+        </div>
+    </div>
+
+</div>
