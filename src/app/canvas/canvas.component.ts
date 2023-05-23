@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, OnInit, ViewChild } from '@angular/core';
-import { StateControlService, feature, tool, waypoint } from '../state-control.service';
+import { StateControlService, Feature, Point, tool, Waypoint } from '../state-control.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -17,10 +17,11 @@ export class CanvasComponent implements OnInit {
   mousePosition: { x: number, y: number } = { x: 0, y: 0 };
   position: { x: number, y: number } = { x: 0, y: 0 };
   scale = 1.0;
+  scaleTotal = 1.0;
   press = false;
   mouseClick!: MouseEvent;
-  waypoints: waypoint[] = [];
-  features: feature[] = [];
+  waypoints: Waypoint[] = [];
+  features: Feature[] = [];
 
   selected: number = -1;
 
@@ -51,8 +52,10 @@ export class CanvasComponent implements OnInit {
   onScroll(event: WheelEvent) {
     if (event.deltaY < 0) {
       this.scale = 1.1;
+      this.scaleTotal *= 1.1;
     } else {
       this.scale = 0.9;
+      this.scaleTotal *= 0.9;
     }
     this.drawZoom();
   }
@@ -65,8 +68,8 @@ export class CanvasComponent implements OnInit {
     }
     if (this.stateControl.toolSelected == tool.SELECT) {
       if (this.selected != -1 && this.press) {
-        this.waypoints[this.selected].x += event.movementX;
-        this.waypoints[this.selected].y += event.movementY;
+        this.waypoints[this.selected].p.x += event.movementX;
+        this.waypoints[this.selected].p.y += event.movementY;
         this.draw();
       }
     }
@@ -106,26 +109,48 @@ export class CanvasComponent implements OnInit {
     this.ctx.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
     this.ctx.restore();
 
-    this.ctx.drawImage(this.mapImage, this.position.x, this.position.y);
+    // Draw Map
+    this.ctx.drawImage(this.mapImage, this.position.x / this.scaleTotal, this.position.y / this.scaleTotal);
 
+    // Draw Waypoints
     this.waypoints.forEach((object, index) => {
       this.ctx.fillStyle = 'black';
       if (index === this.selected) {
         this.ctx.fillStyle = 'red';
       }
-      this.ctx.fillRect(object.x + this.position.x - object.width / 2, object.y + this.position.y - object.height / 2, object.width, object.height);
+      this.ctx.fillRect(object.p.x + (this.position.x / this.scaleTotal) - (object.p.width / 2), object.p.y + (this.position.y / this.scaleTotal) - (object.p.height / 2), object.p.width, object.p.height);
 
       for (let waypoint of object.connections) {
         this.ctx.beginPath();
-        this.ctx.moveTo(object.x + this.position.x, object.y + this.position.y);
-        this.ctx.lineTo(waypoint.x + this.position.x, waypoint.y + this.position.y);
+        this.ctx.moveTo(object.p.x + this.position.x, object.p.y + this.position.y);
+        this.ctx.lineTo(waypoint.p.x + this.position.x, waypoint.p.y + this.position.y);
         this.ctx.stroke();
       }
     });
 
+    // Draw Features
     this.features.forEach((object, index) => {
+      let pointWidth = 10;
+      this.ctx.fillStyle = 'blue';
+      let moveTo = false;
+      this.ctx.beginPath();
+      for (let point of object.points) {
+        if (!moveTo) {
+          this.ctx.moveTo(point.x + (this.position.x / this.scaleTotal), point.y + (this.position.y / this.scaleTotal));
+          moveTo = true;
+        }
+        else {
+          this.ctx.lineTo(point.x + (this.position.x / this.scaleTotal), point.y + (this.position.y / this.scaleTotal));
+          this.ctx.stroke();
+        }
+        this.ctx.fillRect(point.x + (this.position.x / this.scaleTotal) - (pointWidth / 2), point.y + (this.position.y / this.scaleTotal) - (pointWidth / 2), pointWidth, pointWidth);
+      }
+      this.ctx.lineTo(object.points[0].x + (this.position.x / this.scaleTotal), object.points[0].y + (this.position.y / this.scaleTotal));
+      this.ctx.stroke();
+      this.ctx.closePath();
       this.ctx.fillStyle = 'rgba(0, 0, 255, 0.2)';
-      this.ctx.fillRect(object.p1.x + this.position.x, object.p1.y + this.position.y, object.p2.x - object.p1.x, object.p2.y - object.p1.y);
+      this.ctx.fill();
+      // this.ctx.fillRect(object.p1.x + (this.position.x / this.scaleTotal), object.p1.y + (this.position.y / this.scaleTotal), object.p2.x - object.p1.x, object.p2.y - object.p1.y);
     });
   }
 
@@ -135,10 +160,12 @@ export class CanvasComponent implements OnInit {
     //   x: matrix.a * this.mousePosition.x + matrix.c * this.mousePosition.y + matrix.e,
     //   y: matrix.b * this.mousePosition.x + matrix.d * this.mousePosition.y + matrix.f,
     // };
-    // this.ctx.translate(point.x, point.y);
-    // this.ctx.scale(this.scale, this.scale);
-    // this.ctx.translate(-point.x, -point.y);
-    // this.draw();
+
+    this.ctx.translate(this.mousePosition.x, this.mousePosition.y);
+    this.ctx.scale(this.scale, this.scale);
+    this.ctx.translate(-this.mousePosition.x, -this.mousePosition.y);
+    console.log(this.mousePosition);
+    this.draw();
   }
 
 
@@ -146,7 +173,7 @@ export class CanvasComponent implements OnInit {
     if (event.offsetX === this.mouseClick.offsetX && event.offsetY === this.mouseClick.offsetY) {
       let found = false;
       this.waypoints.forEach((object, index) => {
-        if (this.checkWaypointBounds(event, object)) {
+        if (this.checkWaypointBounds(event, object.p)) {
           found = true;
           if (this.selected == index) {
             this.selected = -1;
@@ -159,10 +186,12 @@ export class CanvasComponent implements OnInit {
       if (!found) {
         this.waypoints.push({
           name: 'Waypoint' + event.offsetX + event.offsetY,
-          width: 10,
-          height: 10,
-          x: event.offsetX - this.position.x,
-          y: event.offsetY - this.position.y,
+          p: {
+            x: event.offsetX - this.position.x,
+            y: event.offsetY - this.position.y,
+            width: 10,
+            height: 10
+          },
           connections: []
         });
         this.stateControl.showEditWaypoint.next(this.waypoints[this.waypoints.length - 1]);
@@ -172,20 +201,35 @@ export class CanvasComponent implements OnInit {
     }
     else {
       // Draw rectangle
-      let p1: { x: number, y: number } = {
+      let p1: Point = {
         x: this.mouseClick.offsetX - this.position.x,
-        y: this.mouseClick.offsetY - this.position.y
+        y: this.mouseClick.offsetY - this.position.y,
+        width: 10,
+        height: 10
       }
-      let p2: { x: number, y: number } = {
+      let p2: Point = {
+        x: this.mouseClick.offsetX - this.position.x,
+        y: event.offsetY - this.position.y,
+        width: 10,
+        height: 10
+      }
+      let p3: Point = {
         x: event.offsetX - this.position.x,
-        y: event.offsetY - this.position.y
+        y: event.offsetY - this.position.y,
+        width: 10,
+        height: 10
+      }
+      let p4: Point = {
+        x: event.offsetX - this.position.x,
+        y: this.mouseClick.offsetY - this.position.y,
+        width: 10,
+        height: 10
       }
 
       this.features.push({
         name: 'Feature' + event.offsetX + event.offsetY,
         description: '',
-        p1: p1,
-        p2: p2
+        points: [p1, p2, p3, p4]
       });
       this.stateControl.showEditFeature.next(this.features[this.features.length - 1]);
     }
@@ -195,7 +239,7 @@ export class CanvasComponent implements OnInit {
 
     if (event.offsetX === this.mouseClick.offsetX && event.offsetY === this.mouseClick.offsetY) {
       this.waypoints.forEach((object, index) => {
-        if (this.checkWaypointBounds(event, object)) {
+        if (this.checkWaypointBounds(event, object.p)) {
           this.selected = index;
           this.stateControl.showEditWaypoint.next(object);
         }
@@ -213,7 +257,7 @@ export class CanvasComponent implements OnInit {
   removeObject(event: MouseEvent) {
     if (event.offsetX === this.mouseClick.offsetX && event.offsetY === this.mouseClick.offsetY) {
       this.waypoints.forEach((object, index) => {
-        if (this.checkWaypointBounds(event, object)) {
+        if (this.checkWaypointBounds(event, object.p)) {
 
           for (let waypoint of object.connections) {
             let i = waypoint.connections.indexOf(object);
@@ -234,13 +278,13 @@ export class CanvasComponent implements OnInit {
   connectObject(event: MouseEvent) {
     if (this.selected == -1) {
       this.waypoints.forEach((object, index) => {
-        if (this.checkWaypointBounds(event, object)) {
+        if (this.checkWaypointBounds(event, object.p)) {
           this.selected = index;
         }
       });
     } else {
       this.waypoints.forEach((object, index) => {
-        if (this.checkWaypointBounds(event, object)) {
+        if (this.checkWaypointBounds(event, object.p)) {
           if (this.selected != index && !this.waypoints[this.selected].connections.includes(this.waypoints[index])) {
             this.waypoints[this.selected].connections.push(this.waypoints[index]);
             this.waypoints[index].connections.push(this.waypoints[this.selected]);
@@ -252,14 +296,14 @@ export class CanvasComponent implements OnInit {
     }
   }
 
-  checkWaypointBounds(event: MouseEvent, object: waypoint): boolean {
+  checkWaypointBounds(event: MouseEvent, object: Point): boolean {
     return event.offsetX - this.position.x > object.x - object.width / 2 && event.offsetX - this.position.x < object.x + object.width - object.width / 2 &&
       event.offsetY - this.position.y > object.y - object.height / 2 && event.offsetY - this.position.y < object.y + object.height - object.height / 2;
   }
 
-  checkFeatureBounds(event: MouseEvent, object: feature): boolean {
-    return event.offsetX - this.position.x > object.p1.x && event.offsetX - this.position.x < object.p2.x &&
-      event.offsetY - this.position.y > object.p1.y && event.offsetY - this.position.y < object.p2.y;
+  checkFeatureBounds(event: MouseEvent, object: Feature): boolean {
+    return event.offsetX - this.position.x > object.points[0].x && event.offsetX - this.position.x < object.points[2].x &&
+      event.offsetY - this.position.y > object.points[0].y && event.offsetY - this.position.y < object.points[2].y;
   }
 
 }

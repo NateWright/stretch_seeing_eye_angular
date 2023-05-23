@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { StateControlService, feature, tool, waypoint } from '../state-control.service';
+import { StateControlService, Feature, tool, Waypoint } from '../state-control.service';
 import { Subscription } from 'rxjs';
 
 enum editType {
@@ -18,15 +18,15 @@ export class SidebarComponent implements OnInit, OnDestroy {
   readonly editType = editType;
   editSubWaypoint!: Subscription;
   editSubFeature!: Subscription;
-  waypoint: waypoint | undefined = undefined;
-  feature: feature | undefined = undefined;
+  waypoint: Waypoint | undefined = undefined;
+  feature: Feature | undefined = undefined;
   objectType: editType = editType.NONE;
 
   constructor(public stateControl: StateControlService) { }
 
   ngOnInit(): void {
     this.editSubWaypoint = this.stateControl.showEditWaypoint.subscribe(
-      (waypoint: waypoint | undefined) => {
+      (waypoint: Waypoint | undefined) => {
         if (waypoint == undefined) {
           this.objectType = editType.NONE;
           this.waypoint = undefined;
@@ -40,7 +40,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       }
     );
     this.editSubFeature = this.stateControl.showEditFeature.subscribe(
-      (feature: feature | undefined) => {
+      (feature: Feature | undefined) => {
         if (feature == undefined) {
           this.objectType = editType.NONE;
           this.waypoint = undefined;
