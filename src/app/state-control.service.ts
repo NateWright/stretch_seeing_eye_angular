@@ -9,6 +9,17 @@ export enum tool {
   CONNECTION
 }
 
+export enum AddTool {
+  WAYPOINT,
+  FEATURE
+}
+
+export enum DetailLevel {
+  LOW,
+  MEDIUM,
+  HIGH
+}
+
 export interface Point {
   x: number;
   y: number;
@@ -26,6 +37,8 @@ export interface Feature {
   name: string;
   description: string;
   points: Point[];
+  path: Path2D | undefined;
+  detailLevel: DetailLevel;
 }
 
 @Injectable({
@@ -33,6 +46,7 @@ export interface Feature {
 })
 export class StateControlService {
   toolSelected = tool.PAN;
+  addToolSelected = AddTool.WAYPOINT;
   waypoints: Waypoint[] = [];
   features: Feature[] = [];
   showEditWaypoint = new EventEmitter<Waypoint | undefined>();
@@ -45,12 +59,13 @@ export class StateControlService {
   imgSize = { width: 0, height: 0 };
 
   importWaypointString = "";
-  importFeatureString = "Bathroom,Entering Bathroom,11.350000000000009,4.050000000000011,15.550000000000011,0.5\nFeature245548,Test, 1.1500000000000057, 0.8500000000000085, 4.800000000000011,-1.7999999999999972";
+  importFeatureString = "";
 
   constructor(private clipboard: Clipboard) { }
 
   importWaypointData() {
     for (let str of this.importWaypointString.split('\n')) {
+      if (str == "") continue;
       let data = str.split(',').map(x => x.trim());
       this.waypoints.push({
         name: data[0],
@@ -95,34 +110,54 @@ export class StateControlService {
   }
 
   importFeatureData() {
-    // for (let str of this.importFeatureString.split('\n')) {
-    //   let data = str.split(',').map(x => x.trim());
-    //   this.features.push({
-    //     name: data[0],
-    //     description: data[1],
-    //     p1: {
-    //       x: (parseFloat(data[2]) - this.origin.x) / this.resolution,
-    //       y: this.imgSize.height - (parseFloat(data[3]) - this.origin.y) / this.resolution
-    //     },
-    //     p2: {
-    //       x: (parseFloat(data[4]) - this.origin.x) / this.resolution,
-    //       y: this.imgSize.height - (parseFloat(data[5]) - this.origin.y) / this.resolution
-    //     }
-    //   });
-    // }
-    // this.redraw.emit();
+    for (let str of this.importFeatureString.split('\n')) {
+      if (str == "") continue;
+
+      let data = str.split(',').map(x => x.trim());
+
+      let index = 0;
+      let name = data[index++];
+      let description = data[index++];
+      let count = parseInt(data[index++]);
+      let points: Point[] = [];
+
+      for (let i = 0; i < count; i++) {
+        points.push({
+          x: (parseFloat(data[index++]) - this.origin.x) / this.resolution,
+          y: this.imgSize.height - (parseFloat(data[index++]) - this.origin.y) / this.resolution,
+          width: 10,
+          height: 10
+        });
+      }
+
+      let detailLevel = data[index] == 'LOW' ? DetailLevel.LOW : data[index] == 'MEDIUM' ? DetailLevel.MEDIUM : DetailLevel.HIGH;
+      index++;
+
+      this.features.push({
+        name: name,
+        description: description,
+        points: points,
+        detailLevel: detailLevel,
+        path: new Path2D()
+      });
+    }
+
+    console.log(this.features);
+    this.redraw.emit();
   }
   exportFeatureData() {
-    // let data = "";
-    // for (let feature of this.features) {
-    //   let str = feature.name;
-    //   str += ',' + feature.description;
-    //   str += ',' + (feature.p1.x * this.resolution + this.origin.x).toString();                             // x
-    //   str += ',' + ((this.imgSize.height - feature.p1.y) * this.resolution + this.origin.y).toString();     // y
-    //   str += ',' + (feature.p2.x * this.resolution + this.origin.x).toString();                             // x
-    //   str += ',' + ((this.imgSize.height - feature.p2.y) * this.resolution + this.origin.y).toString();     // y
-    //   data += str + '\n';
-    // }
-    // this.clipboard.copy(data);
+    let data = "";
+    for (let feature of this.features) {
+      let str = feature.name;
+      str += ',' + feature.description;
+      str += ',' + feature.points.length;
+      for (let point of feature.points) {
+        str += ',' + (point.x * this.resolution + this.origin.x).toString();                             // x
+        str += ',' + ((this.imgSize.height - point.y) * this.resolution + this.origin.y).toString();     // y
+      }
+      str += ',' + (feature.detailLevel == DetailLevel.LOW ? 'LOW' : feature.detailLevel == DetailLevel.MEDIUM ? 'MEDIUM' : 'HIGH');
+      data += str + '\n';
+    }
+    this.clipboard.copy(data);
   }
 }

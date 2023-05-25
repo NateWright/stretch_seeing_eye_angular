@@ -41,25 +41,49 @@
         <div *ngIf="stateControl.toolSelected == tool.ADD || stateControl.toolSelected == tool.SELECT">
             <div>
                 <app-sidebar-card>
+                    <app-sidebar-button [selected]="stateControl.addToolSelected == AddTool.WAYPOINT"
+                        (click)="stateControl.addToolSelected = AddTool.WAYPOINT">
+                        Waypoint
+                    </app-sidebar-button>
+                    <app-sidebar-button [selected]="stateControl.addToolSelected == AddTool.FEATURE"
+                        (click)="stateControl.addToolSelected = AddTool.FEATURE">
+                        Feature
+                    </app-sidebar-button>
+                </app-sidebar-card>
+                <app-sidebar-card
+                    *ngIf="(objectType == editType.WAYPOINT && waypoint) || (objectType == editType.FEATURE && feature)">
                     <div *ngIf="objectType == editType.WAYPOINT && waypoint">
-                        <label for="object_name"
-                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Waypoint name</label>
+                        <label for="object_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                            Waypoint name
+                        </label>
                         <input type="text" id="object_name"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             placeholder="Base" [(ngModel)]="waypoint.name" required>
                     </div>
                     <div *ngIf="objectType == editType.FEATURE && feature">
-                        <label for="object_name"
-                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Feature name</label>
+                        <label for="object_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                            Feature name
+                        </label>
                         <input type="text" id="object_name"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             placeholder="Base" [(ngModel)]="feature.name" required>
-                        <label for="description"
-                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Feature
-                            Description</label>
+
+                        <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                            Feature Description
+                        </label>
                         <input type="text" id="description"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             placeholder="Base" [(ngModel)]="feature.description" required>
+                        <label for="detail_level" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                            Detail Level
+                        </label>
+                        <select id="detail_level"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            [(ngModel)]="feature.detailLevel" (change)="this.stateControl.redraw.next()">
+                            <option [value]="DetailLevel.LOW" selected>Low</option>
+                            <option [value]="DetailLevel.MEDIUM">Medium</option>
+                            <option [value]="DetailLevel.HIGH">High</option>
+                        </select>
                     </div>
                 </app-sidebar-card>
             </div>

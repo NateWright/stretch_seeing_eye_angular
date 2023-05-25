@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { StateControlService, Feature, tool, Waypoint } from '../state-control.service';
+import { StateControlService, Feature, tool, Waypoint, DetailLevel, AddTool } from '../state-control.service';
 import { Subscription } from 'rxjs';
 
 enum editType {
@@ -16,6 +16,8 @@ enum editType {
 export class SidebarComponent implements OnInit, OnDestroy {
   readonly tool = tool;
   readonly editType = editType;
+  readonly DetailLevel = DetailLevel;
+  readonly AddTool = AddTool;
   editSubWaypoint!: Subscription;
   editSubFeature!: Subscription;
   waypoint: Waypoint | undefined = undefined;
