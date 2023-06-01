@@ -39,6 +39,7 @@ export interface Feature {
   points: Point[];
   path: Path2D | undefined;
   detailLevel: DetailLevel;
+  waypoint?: Waypoint;
 }
 
 @Injectable({
@@ -58,13 +59,18 @@ export class StateControlService {
   positionOffset = { x: 0, y: 0 };
   imgSize = { width: 0, height: 0 };
 
-  importWaypointString = "";
-  importFeatureString = "";
+  importString = "";
 
   constructor(private clipboard: Clipboard) { }
 
-  importWaypointData() {
-    for (let str of this.importWaypointString.split('\n')) {
+  importData() {
+    let data = this.importString.split('---');
+    this.importWaypointData(data[0]);
+    this.importFeatureData(data[1]);
+  }
+
+  importWaypointData(inputStr: string) {
+    for (let str of inputStr.split('\n')) {
       if (str == "") continue;
       let data = str.split(',').map(x => x.trim());
       this.waypoints.push({
@@ -78,7 +84,7 @@ export class StateControlService {
         connections: []
       });
     }
-    this.importWaypointString.split('\n').forEach((object, index) => {
+    inputStr.split('\n').forEach((object, index) => {
       let data = object.split(',').map(x => x.trim());
       for (let i = 8; i < data.length; i++) {
         let waypoint = this.waypoints.find(x => x.name == data[i]);
@@ -90,27 +96,8 @@ export class StateControlService {
     this.redraw.emit();
   }
 
-  exportWaypointData() {
-    let data = "";
-    for (let waypoint of this.waypoints) {
-      let str = waypoint.name;
-      str += ',' + (waypoint.p.x * this.resolution + this.origin.x).toString();                             // x
-      str += ',' + ((this.imgSize.height - waypoint.p.y) * this.resolution + this.origin.y).toString();     // y
-      str += ', 0';                                                                                      // z
-      str += ', 0';                                                                                 // x rot
-      str += ', 0';                                                                                 // y rot
-      str += ', 0';                                                                                 // z rot
-      str += ', 1';                                                                                 // w rot
-      for (let connection of waypoint.connections) {
-        str += ',' + connection.name;
-      }
-      data += str + '\n';
-    }
-    this.clipboard.copy(data);
-  }
-
-  importFeatureData() {
-    for (let str of this.importFeatureString.split('\n')) {
+  importFeatureData(inputStr: string) {
+    for (let str of inputStr.split('\n')) {
       if (str == "") continue;
 
       let data = str.split(',').map(x => x.trim());
@@ -133,18 +120,47 @@ export class StateControlService {
       let detailLevel = data[index] == 'LOW' ? DetailLevel.LOW : data[index] == 'MEDIUM' ? DetailLevel.MEDIUM : DetailLevel.HIGH;
       index++;
 
+      let waypoint = this.waypoints.find(x => x.name == data[index]);
+
       this.features.push({
         name: name,
         description: description,
         points: points,
         detailLevel: detailLevel,
-        path: new Path2D()
+        path: new Path2D(),
+        waypoint: waypoint
       });
     }
 
     console.log(this.features);
     this.redraw.emit();
   }
+
+  exportData() {
+    let data = this.exportWaypointData() + '---\n' + this.exportFeatureData();
+    console.log(data);
+    this.clipboard.copy(data);
+  }
+
+  exportWaypointData() {
+    let data = "";
+    for (let waypoint of this.waypoints) {
+      let str = waypoint.name;
+      str += ',' + (waypoint.p.x * this.resolution + this.origin.x).toString();                             // x
+      str += ',' + ((this.imgSize.height - waypoint.p.y) * this.resolution + this.origin.y).toString();     // y
+      str += ', 0';                                                                                      // z
+      str += ', 0';                                                                                 // x rot
+      str += ', 0';                                                                                 // y rot
+      str += ', 0';                                                                                 // z rot
+      str += ', 1';                                                                                 // w rot
+      for (let connection of waypoint.connections) {
+        str += ',' + connection.name;
+      }
+      data += str + '\n';
+    }
+    return data;
+  }
+
   exportFeatureData() {
     let data = "";
     for (let feature of this.features) {
@@ -156,8 +172,11 @@ export class StateControlService {
         str += ',' + ((this.imgSize.height - point.y) * this.resolution + this.origin.y).toString();     // y
       }
       str += ',' + (feature.detailLevel == DetailLevel.LOW ? 'LOW' : feature.detailLevel == DetailLevel.MEDIUM ? 'MEDIUM' : 'HIGH');
+      if (feature.waypoint) {
+        str += ',' + feature.waypoint.name;
+      }
       data += str + '\n';
     }
-    this.clipboard.copy(data);
+    return data;
   }
 }

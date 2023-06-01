@@ -140,10 +140,18 @@ export class CanvasComponent implements OnInit {
         this.ctx.lineTo(waypoint.p.x + this.position.x, waypoint.p.y + this.position.y);
         this.ctx.stroke();
       }
+
     });
 
     // Draw Features
     this.features.forEach((object: Feature, index) => {
+      if (object.waypoint) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(object.waypoint.p.x + this.position.x, object.waypoint.p.y + this.position.y);
+        this.ctx.lineTo(object.points[0].x + this.position.x, object.points[0].y + this.position.y);
+        this.ctx.stroke();
+      }
+
       let color1 = '';
       let color2 = '';
 
@@ -337,7 +345,15 @@ export class CanvasComponent implements OnInit {
     } else {
       this.waypoints.forEach((object, index) => {
         if (this.checkWaypointBounds(event, object.p)) {
-          if (this.connectP1 != index && !this.waypoints[this.connectP1].connections.includes(this.waypoints[index])) {
+          if (this.connectP1 == index) {
+            this.connectP1 = -1;
+          } else if (this.waypoints[this.connectP1].connections.includes(this.waypoints[index])) {
+            let i = this.waypoints[this.connectP1].connections.indexOf(this.waypoints[index]);
+            this.waypoints[this.connectP1].connections.splice(i, 1);
+            i = this.waypoints[index].connections.indexOf(this.waypoints[this.connectP1]);
+            this.waypoints[index].connections.splice(i, 1);
+            this.connectP1 = -1;
+          } else {
             this.waypoints[this.connectP1].connections.push(this.waypoints[index]);
             this.waypoints[index].connections.push(this.waypoints[this.connectP1]);
             this.connectP1 = -1;
@@ -345,6 +361,18 @@ export class CanvasComponent implements OnInit {
           }
         }
       });
+      this.features.forEach((object, index) => {
+        if (object.points.length == 1 && this.checkFeatureBounds(event, object)[0]) {
+          if (object.waypoint == this.waypoints[this.connectP1]) {
+            object.waypoint = undefined;
+            this.connectP1 = -1;
+          } else {
+            object.waypoint = this.waypoints[this.connectP1];
+            this.connectP1 = -1;
+          }
+        }
+      }
+      );
     }
   }
 

@@ -4,16 +4,16 @@
 
     <div>
         <label for="object_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-            Waypoint Data
+            Data
         </label>
         <textarea id="comment" rows="4"
             class="w-full px-0 text-sm text-gray-900 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400"
-            placeholder="Add Waypoints..." [(ngModel)]="stateControl.importWaypointString" required></textarea>
+            placeholder="Add Waypoints..." [(ngModel)]="stateControl.importString" required></textarea>
 
-        <app-sidebar-button (click)="this.stateControl.importWaypointData()">Import Data</app-sidebar-button>
-        <app-sidebar-button (click)="this.stateControl.exportWaypointData()">Export Data</app-sidebar-button>
+        <app-sidebar-button (click)="this.stateControl.importData()">Import Data</app-sidebar-button>
+        <app-sidebar-button (click)="this.stateControl.exportData()">Export Data</app-sidebar-button>
     </div>
-    <div>
+    <!-- <div>
         <label for="object_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
             Feature Data
         </label>
@@ -23,5 +23,5 @@
 
         <app-sidebar-button (click)="this.stateControl.importFeatureData()">Import Data</app-sidebar-button>
         <app-sidebar-button (click)="this.stateControl.exportFeatureData()">Export Data</app-sidebar-button>
-    </div>
+    </div> -->
 </div>

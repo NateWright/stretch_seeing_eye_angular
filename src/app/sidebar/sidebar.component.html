@@ -40,7 +40,7 @@
     <div class="m-2">
         <div *ngIf="stateControl.toolSelected == tool.ADD || stateControl.toolSelected == tool.SELECT">
             <div>
-                <app-sidebar-card>
+                <app-sidebar-card *ngIf="stateControl.toolSelected == tool.ADD">
                     <app-sidebar-button [selected]="stateControl.addToolSelected == AddTool.WAYPOINT"
                         (click)="stateControl.addToolSelected = AddTool.WAYPOINT">
                         Waypoint
