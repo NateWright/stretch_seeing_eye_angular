@@ -84,4 +84,19 @@ export class SidebarComponent implements OnInit, OnDestroy {
   removeClicked() {
     this.stateControl.toolSelected = tool.REMOVE;
   }
+  waypointNavigation(event: any) {
+    if (this.waypoint === undefined) {
+      return;
+    }
+    if (this.waypoint.door === undefined) {
+      this.waypoint.door = {
+        entrance: true,
+        detailLevel: DetailLevel.LOW
+      }
+      this.waypoint.navigatable = true;
+      this.stateControl.redraw.emit();
+    } else {
+      this.waypoint.door = undefined;
+    }
+  }
 }

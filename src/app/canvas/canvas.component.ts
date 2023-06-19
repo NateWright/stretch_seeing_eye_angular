@@ -126,12 +126,28 @@ export class CanvasComponent implements OnInit {
     // Draw Waypoints
     this.waypoints.forEach((object, index) => {
       this.ctx.fillStyle = 'black';
+      if (object.door) {
+        switch (+object.door.detailLevel) {
+          case DetailLevel.LOW:
+            this.ctx.fillStyle = 'rgba(255, 255, 0, 1)';
+            break;
+          case DetailLevel.MEDIUM:
+            this.ctx.fillStyle = 'rgba(255, 87, 51, 1)';
+            break;
+          case DetailLevel.HIGH:
+            this.ctx.fillStyle = 'rgba(255, 0, 0, 1)';
+            break;
+          default:
+            console.log('error')
+        }
+      }
       if (object.p == this.selected) {
         this.ctx.fillStyle = 'red';
       }
       if (index == this.connectP1) {
         this.ctx.fillStyle = 'green';
       }
+
       this.ctx.fillRect(object.p.x + (this.position.x / this.scaleTotal) - (object.p.width / 2), object.p.y + (this.position.y / this.scaleTotal) - (object.p.height / 2), object.p.width, object.p.height);
 
       for (let waypoint of object.connections) {
@@ -236,7 +252,9 @@ export class CanvasComponent implements OnInit {
             width: 10,
             height: 10
           },
-          connections: []
+          connections: [],
+          navigatable: false,
+          door: undefined
         });
         this.stateControl.showEditWaypoint.next(this.waypoints[this.waypoints.length - 1]);
       }

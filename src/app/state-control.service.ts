@@ -26,11 +26,17 @@ export interface Point {
   width: number;
   height: number;
 }
+export interface Door {
+  entrance: boolean;
+  detailLevel: DetailLevel;
+}
 
 export interface Waypoint {
   name: string;
   p: Point;
   connections: Waypoint[];
+  navigatable: boolean;
+  door: Door | undefined;
 }
 
 export interface Feature {
@@ -67,33 +73,46 @@ export class StateControlService {
     let data = this.importString.split('---');
     this.importWaypointData(data[0]);
     this.importFeatureData(data[1]);
+    this.redraw.emit();
   }
-
+  // name, x, y, connectionCount, connection1, connection2, ..., navigatable?, door?, EntranceBool, DetailLevel
   importWaypointData(inputStr: string) {
     for (let str of inputStr.split('\n')) {
       if (str == "") continue;
       let data = str.split(',').map(x => x.trim());
+      let index = 0;
       this.waypoints.push({
-        name: data[0],
+        name: data[index++],
         p: {
           width: 10,
           height: 10,
-          x: (parseFloat(data[1]) - this.origin.x) / this.resolution,
-          y: this.imgSize.height - (parseFloat(data[2]) - this.origin.y) / this.resolution
+          x: (parseFloat(data[index++]) - this.origin.x) / this.resolution,
+          y: this.imgSize.height - (parseFloat(data[index++]) - this.origin.y) / this.resolution
         },
-        connections: []
+        connections: [],
+        navigatable: false,
+        door: undefined
       });
-    }
-    inputStr.split('\n').forEach((object, index) => {
-      let data = object.split(',').map(x => x.trim());
-      for (let i = 8; i < data.length; i++) {
-        let waypoint = this.waypoints.find(x => x.name == data[i]);
+      let count = +data[index++];
+      for (let i = 0; i < count; i++) {
+        let waypoint = this.waypoints.find(x => x.name == data[index]);
+        index++;
         if (waypoint) {
-          this.waypoints[index].connections.push(waypoint);
+          this.waypoints[this.waypoints.length - 1].connections.push(waypoint);
+          waypoint.connections.push(this.waypoints[this.waypoints.length - 1]);
         }
       }
-    });
-    this.redraw.emit();
+      console.log(index)
+      this.waypoints[this.waypoints.length - 1].navigatable = data[index++] == 'true';
+      if (data[index++] == 'true') {
+        this.waypoints[this.waypoints.length - 1].door = {
+          entrance: data[index++] == 'ENTRANCE',
+          detailLevel: data[index] == 'LOW' ? DetailLevel.LOW : data[index] == 'MEDIUM' ? DetailLevel.MEDIUM : DetailLevel.HIGH
+        }
+      } else {
+        this.waypoints[this.waypoints.length - 1].door = undefined;
+      }
+    }
   }
 
   importFeatureData(inputStr: string) {
@@ -132,8 +151,6 @@ export class StateControlService {
       });
     }
 
-    console.log(this.features);
-    this.redraw.emit();
   }
 
   exportData() {
@@ -142,25 +159,31 @@ export class StateControlService {
     this.clipboard.copy(data);
   }
 
+  // name, x, y, connectionCount, connection1, connection2, ..., navigatable, door?, EntranceBool, DetailLevel
   exportWaypointData() {
     let data = "";
     for (let waypoint of this.waypoints) {
-      let str = waypoint.name;
+      let str = waypoint.name; // name
       str += ',' + (waypoint.p.x * this.resolution + this.origin.x).toString();                             // x
       str += ',' + ((this.imgSize.height - waypoint.p.y) * this.resolution + this.origin.y).toString();     // y
-      str += ', 0';                                                                                      // z
-      str += ', 0';                                                                                 // x rot
-      str += ', 0';                                                                                 // y rot
-      str += ', 0';                                                                                 // z rot
-      str += ', 1';                                                                                 // w rot
-      for (let connection of waypoint.connections) {
+      str += ',' + waypoint.connections.length; // connectionCount
+      for (let connection of waypoint.connections) { // connections
         str += ',' + connection.name;
       }
-      data += str + '\n';
+      str += ',' + waypoint.navigatable; // navigatable?
+      if (waypoint.door) {
+        str += ',' + true; // door?
+        str += ',' + (waypoint.door.entrance ? 'ENTRANCE' : 'INSIDE'); // EntranceBool
+        str += ',' + (waypoint.door.detailLevel == DetailLevel.LOW ? 'LOW' : waypoint.door.detailLevel == DetailLevel.MEDIUM ? 'MEDIUM' : 'HIGH'); // DetailLevel
+      } else {
+        str += ',' + false; // door?
+      }
+      data += str + '\n'; // newline
     }
     return data;
   }
 
+  // name, description, pointCount, point1x, point1y, point2x, point2y, ..., DetailLevel, waypoint?
   exportFeatureData() {
     let data = "";
     for (let feature of this.features) {
