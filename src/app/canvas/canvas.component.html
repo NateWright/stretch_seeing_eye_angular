@@ -1,6 +1,6 @@
 <div class="dark:text-white dark:bg-slate-800 shadow p-2 rounded-sm h-full w-full">
-    <canvas #canvas width="1000" height="1000" (wheel)="onScroll($event)" (mousemove)="onMouseMove($event)"
-        (mousedown)="onMouseDown($event)" (mouseup)="onMouseUp($event)"></canvas>
+    <canvas #canvas width="1000" height="1000" (mousemove)="onMouseMove($event)" (mousedown)="onMouseDown($event)"
+        (mouseup)="onMouseUp($event)"></canvas>
 
     <div>
         <label for="object_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">

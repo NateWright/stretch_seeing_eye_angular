@@ -8,6 +8,9 @@ import { CanvasComponent } from './canvas/canvas.component';
 import { ButtonComponent } from './sidebar/button/button.component';
 import { CardComponent } from './sidebar/card/card.component';
 import { FormsModule } from '@angular/forms';
+import { DoorComponent } from './sidebar/door/door.component';
+import { DetailSelectComponent } from './sidebar/detail-select/detail-select.component';
+import { WaypointComponent } from './sidebar/waypoint/waypoint.component';
 
 @NgModule({
   declarations: [
@@ -15,7 +18,10 @@ import { FormsModule } from '@angular/forms';
     SidebarComponent,
     CanvasComponent,
     ButtonComponent,
-    CardComponent
+    CardComponent,
+    DoorComponent,
+    DetailSelectComponent,
+    WaypointComponent,
   ],
   imports: [
     BrowserModule,

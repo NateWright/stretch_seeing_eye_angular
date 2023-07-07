@@ -1,0 +1,23 @@
+<app-sidebar-card>
+    <h5 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+        Waypoint
+    </h5>
+    <div class="flex items-center mb-4">
+
+        <input id="navigation-checkbox" type="checkbox"
+            class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            [(ngModel)]="waypoint.navigatable" (change)="navigatableChange($event)">
+        <label for="navigation-checkbox" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+            Navigatable?
+        </label>
+    </div>
+    <div *ngIf="waypoint.navigatable">
+        <label for="object_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            Waypoint name
+        </label>
+        <input type="text" id="object_name"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            placeholder="Base" [(ngModel)]="waypoint.name" required>
+        <app-detail-select [(detailLevel)]="waypoint.detailLevel!"></app-detail-select>
+    </div>
+</app-sidebar-card>

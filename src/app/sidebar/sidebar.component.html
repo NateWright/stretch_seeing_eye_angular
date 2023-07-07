@@ -45,87 +45,18 @@
                         (click)="stateControl.addToolSelected = AddTool.WAYPOINT">
                         Waypoint
                     </app-sidebar-button>
+                    <app-sidebar-button [selected]="stateControl.addToolSelected == AddTool.DOOR"
+                        (click)="stateControl.addToolSelected = AddTool.DOOR">
+                        Door
+                    </app-sidebar-button>
                     <app-sidebar-button [selected]="stateControl.addToolSelected == AddTool.FEATURE"
                         (click)="stateControl.addToolSelected = AddTool.FEATURE">
                         Feature
                     </app-sidebar-button>
                 </app-sidebar-card>
-                <app-sidebar-card
-                    *ngIf="(objectType == editType.WAYPOINT && waypoint) || (objectType == editType.FEATURE && feature)">
-                    <div *ngIf="objectType == editType.WAYPOINT && waypoint">
-                        <label for="object_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            Waypoint name
-                        </label>
-                        <input type="text" id="object_name"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            placeholder="Base" [(ngModel)]="waypoint.name" required>
-                        <div class="flex items-center my-4">
-                            <input id="navigation-checkbox" type="checkbox"
-                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                                [(ngModel)]="this.waypoint.navigatable" (change)="waypointNavigation($event)">
-                            <label for="navigation-checkbox"
-                                class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                Navigatable?
-                            </label>
-                        </div>
-                        <div class="flex items-center my-4">
-                            <input id="door-checkbox" type="checkbox"
-                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                                [checked]="waypoint.door !== undefined" (change)="waypointNavigation($event)">
-                            <label for="door-checkbox"
-                                class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                Door
-                            </label>
-                        </div>
-                        <div *ngIf="waypoint.door !== undefined">
-                            <label for="entrance" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Entrance or Inside
-                            </label>
-                            <select id="entrance"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                [(ngModel)]="waypoint.door.entrance" (change)="this.stateControl.redraw.next()">
-                                <option [value]="true" selected>Entrance</option>
-                                <option [value]="false">Inside</option>
-                            </select>
-                            <label for="detail_level"
-                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Detail Level
-                            </label>
-                            <select id="detail_level"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                [(ngModel)]="waypoint.door.detailLevel" (change)="this.stateControl.redraw.next()">
-                                <option [value]="DetailLevel.LOW" selected>Low</option>
-                                <option [value]="DetailLevel.MEDIUM">Medium</option>
-                                <option [value]="DetailLevel.HIGH">High</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div *ngIf="objectType == editType.FEATURE && feature">
-                        <label for="object_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            Feature name
-                        </label>
-                        <input type="text" id="object_name"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            placeholder="Base" [(ngModel)]="feature.name" required>
 
-                        <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            Feature Description
-                        </label>
-                        <input type="text" id="description"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            placeholder="Base" [(ngModel)]="feature.description" required>
-                        <label for="detail_level" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            Detail Level
-                        </label>
-                        <select id="detail_level"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            [(ngModel)]="feature.detailLevel" (change)="this.stateControl.redraw.next()">
-                            <option [value]="DetailLevel.LOW" selected>Low</option>
-                            <option [value]="DetailLevel.MEDIUM">Medium</option>
-                            <option [value]="DetailLevel.HIGH">High</option>
-                        </select>
-                    </div>
-                </app-sidebar-card>
+                <app-door *ngIf="selectedDoor" [door]="selectedDoor"></app-door>
+                <app-waypoint *ngIf="selectedWaypoint" [waypoint]="selectedWaypoint"></app-waypoint>
             </div>
         </div>
         <div *ngIf="stateControl.toolSelected == tool.REMOVE">
