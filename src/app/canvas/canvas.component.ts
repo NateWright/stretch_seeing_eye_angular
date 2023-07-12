@@ -242,7 +242,10 @@ export class CanvasComponent implements OnInit {
       let p = w.checkBounds({ x: event.offsetX - this.position.x, y: event.offsetY - this.position.y });
       if (p !== undefined) {
         for (let w2 of waypoints.values()) {
-          w2.connections.splice(w2.connections.indexOf(w), 1);
+          const index = w2.connections.indexOf(w);
+          if (index > -1) {
+            w2.connections.splice(index, 1);
+          }
         }
         waypoints.delete(w.id);
         this.selected = undefined;
@@ -256,6 +259,12 @@ export class CanvasComponent implements OnInit {
     for (let d of doors.values()) {
       let p = d.checkBounds({ x: event.offsetX - this.position.x, y: event.offsetY - this.position.y });
       if (p !== undefined) {
+        for (let w of waypoints.values()) {
+          const index = w.doors.indexOf(d);
+          if (index > -1) {
+            w.doors.splice(index, 1);
+          }
+        }
         doors.delete(d.id);
         this.selected = undefined;
         this.selectedId = -1;

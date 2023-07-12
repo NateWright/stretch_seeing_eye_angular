@@ -57,7 +57,7 @@ export class Door extends BaseObject {
         }
         ctx.fillRect(positionX + this.entrancePoint.x - this.width / 2, positionY + this.entrancePoint.y - this.height / 2, this.width, this.height);
     }
-    export(resolution: number, originX: number, originY: number): string {
+    export(size: { width: number, height: number }, resolution: number, originX: number, originY: number): string {
         let output = [];
         output.push("Door");
         output.push(this.id);
@@ -65,17 +65,17 @@ export class Door extends BaseObject {
         output.push(this.description);
         output.push(DetailLevel[this.detailLevel]);
         output.push(this.entrancePoint.x * resolution + originX);
-        output.push(this.entrancePoint.y * resolution + originY);
+        output.push((size.height - this.entrancePoint.y) * resolution + originY);
         if (this.insidePoint) {
             output.push('true');
             output.push(this.insidePoint.x * resolution + originX);
-            output.push(this.insidePoint.y * resolution + originY);
+            output.push((size.height - this.insidePoint.y) * resolution + originY);
         } else {
             output.push('false');
         }
         return output.join(",");
     }
-    import(str: string, resolution: number, originX: number, originY: number): void {
+    import(str: string, size: { width: number, height: number }, resolution: number, originX: number, originY: number): void {
         let data = str.split(',').map(x => x.trim());
         let index = 1;
         this.id = +data[index++];
@@ -85,12 +85,12 @@ export class Door extends BaseObject {
         index++;
         this.entrancePoint = {
             x: (parseFloat(data[index++]) - originX) / resolution,
-            y: (parseFloat(data[index++]) - originY) / resolution,
+            y: size.height - (parseFloat(data[index++]) - originY) / resolution,
         };
         if (data[index++] == 'true') {
             this.insidePoint = {
                 x: (parseFloat(data[index++]) - originX) / resolution,
-                y: (parseFloat(data[index++]) - originY) / resolution,
+                y: size.height - (parseFloat(data[index++]) - originY) / resolution,
             };
         } else {
             this.insidePoint = undefined;

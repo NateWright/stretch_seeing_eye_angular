@@ -38,31 +38,31 @@ export class Waypoint extends BaseObject {
         }
         ctx.fillRect(positionX + this.point.x - this.width / 2, positionY + this.point.y - this.height / 2, this.width, this.height);
     }
-    export(resolution: number, originX: number, originY: number): string {
+    export(size: { width: number, height: number }, resolution: number, originX: number, originY: number): string {
         let output = [];
         output.push("Waypoint");
         output.push(this.id);
         output.push(this.name);
         output.push(this.point.x * resolution + originX);
-        output.push(this.point.y * resolution + originY);
+        output.push((size.height - this.point.y) * resolution + originY);
         output.push(this.connections.length);
         output.push(...this.connections.map(c => c.id));
         output.push(this.doors.length);
         output.push(...this.doors.map(d => d.id));
         output.push(this.navigatable);
-        if (this.navigatable && this.detailLevel) {
+        if (this.navigatable && this.detailLevel !== undefined) {
             output.push(DetailLevel[this.detailLevel]);
         }
         return output.join(",");
     }
-    import(str: string, waypoints: Map<number, Waypoint>, doors: Map<number, Door>, resolution: number, originX: number, originY: number): void {
+    import(str: string, waypoints: Map<number, Waypoint>, doors: Map<number, Door>, size: { width: number, height: number }, resolution: number, originX: number, originY: number): void {
         let data = str.split(',').map(x => x.trim());
         let index = 1;
         this.id = +data[index++];
         this.name = data[index++];
         this.point = {
             x: (parseFloat(data[index++]) - originX) / resolution,
-            y: (parseFloat(data[index++]) - originY) / resolution,
+            y: size.height - (parseFloat(data[index++]) - originY) / resolution,
         };
         let count = +data[index++];
         for (let i = 0; i < count; i++) {

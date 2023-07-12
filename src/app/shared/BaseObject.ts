@@ -17,5 +17,5 @@ export abstract class BaseObject {
     }
     abstract checkBounds(point: Point): Point | undefined;
     abstract draw(ctx: CanvasRenderingContext2D, positionX: number, positionY: number, selected: number): void;
-    abstract export(resolution: number, originX: number, originY: number): string;
+    abstract export(size: { width: number, height: number }, resolution: number, originX: number, originY: number): string;
 }

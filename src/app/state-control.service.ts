@@ -55,12 +55,12 @@ export class StateControlService {
       if (line == "") continue;
       if (line.startsWith("Waypoint")) {
         let waypoint = new Waypoint(0, "", { x: 0, y: 0 });
-        waypoint.import(line, waypoints, doors, this.resolution, this.origin.x, this.origin.y);
+        waypoint.import(line, waypoints, doors, this.imgSize, this.resolution, this.origin.x, this.origin.y);
         waypoints.set(waypoint.id, waypoint);
         max = Math.max(max, waypoint.id);
       } else if (line.startsWith("Door")) {
         let door = new Door(0, "", "", { x: 0, y: 0 }, DetailLevel.LOW);
-        door.import(line, this.resolution, this.origin.x, this.origin.y);
+        door.import(line, this.imgSize, this.resolution, this.origin.x, this.origin.y);
         doors.set(door.id, door);
         max = Math.max(max, door.id);
       }
@@ -75,10 +75,10 @@ export class StateControlService {
   exportData() {
     let data = "";
     for (let door of this.doors.values()) {
-      data += door.export(this.resolution, this.origin.x, this.origin.y) + '\n';
+      data += door.export(this.imgSize, this.resolution, this.origin.x, this.origin.y) + '\n';
     }
     for (let waypoint of this.waypoints.values()) {
-      data += waypoint.export(this.resolution, this.origin.x, this.origin.y) + '\n';
+      data += waypoint.export(this.imgSize, this.resolution, this.origin.x, this.origin.y) + '\n';
     }
 
     this.clipboard.copy(data);
